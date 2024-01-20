@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const axios = require('axios');
 
 const app = express();
 app.use(cors());
@@ -32,7 +33,13 @@ app.post('/reviews', async (req, res) => {
     });
 
     review_new.save()
-        .then(() => {
+        .then(async () => {
+            const reply = await Review.find();
+            try {
+                axios.post('http://127.0.0.1:5000/', reply);
+            } catch (err) {
+                console.log(err);
+            }
             res.json({
                 message: 'Review saved successfully'
             });
@@ -49,7 +56,6 @@ app.get('/api/reviewscollection', async (req, res) => {
 app.post('/api/reviewsdeposition', async (req, res) => {
         try {
             const reviews = req.body;
-            console.log(req);
             await Promise.all(reviews.map(async (review) => {
                 console.log(review._id, review.reply)
                 await Review.findByIdAndUpdate(review._id, {

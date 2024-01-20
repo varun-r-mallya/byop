@@ -15,10 +15,11 @@ def ask():
             _id = item['_id']
             review = item['review']
             rating = item['rating']
-            reply = item['reply']
+            reply = item.get('reply')
             print(f"_id: {_id}, review: {review}, rating: {rating}, reply: {reply}")
             send = {"_id": _id, "reply": "reply from flask"}
-            Listofreviews.append(send)
+            if not Listofreviews.__contains__(send):
+                Listofreviews.append(send)
         return Listofreviews
     except:
         return "failed"
