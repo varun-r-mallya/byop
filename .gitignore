@@ -1,0 +1,8 @@
+.venv
+*.pickle
+*.zip
+data
+testing
+stopwords
+tokenizers
+amazondataset
