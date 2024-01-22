@@ -2,6 +2,26 @@ from collections import Counter
 import pickle
 from flask import Flask, jsonify
 import requests
+import yake
+import numpy as np
+import pandas as pd
+import spacy
+from spacy.matcher import Matcher
+
+nlp = spacy.load("en_core_web_sm")
+
+matcher = Matcher(nlp.vocab)
+pattern = [{"POS": "NOUN"},] 
+matcher.add("NOUNS", [pattern])
+
+def fill_template(template, doc):
+    matches = matcher(doc)
+    for match_id, start, end in matches:
+        span = doc[start:end]
+        if match_id == nlp.vocab.strings["NOUNS"]:
+            template = template.replace("{Topic Keyword}", span.text)
+    return template
+
 app = Flask(__name__)
 Listofreviews = []
 
@@ -26,12 +46,18 @@ def analyse(sentence):
     numbers = [one, two, three]
     counter = Counter(numbers)
     most_common_number = counter.most_common(1)[0][0]
+    kw_extractor = yake.KeywordExtractor()
+    keywords = kw_extractor.extract_keywords(sentence)
+    # doc = nlp(sentence)
+    # set([ent.label_ for ent in doc.ents])
+
     if most_common_number == 1:
-        return "We are glad that you are happy with our services!"
+        # filled_template = fill_template("We're thrilled you enjoyed {Named Entity}. It makes us happy to hear that you liked the {Topic Keyword}.", doc)
+        return "We are glad that you are happy with our services! We are happy that you liked our " + keywords[0][0] + "."
     elif most_common_number == -1:
-        return "We are sorry that you are unhappy with our services. Kindly tell us how we can improve."
+        return "We are sorry that you are unhappy with our services. Kindly tell us how we can improve our " + keywords[0][0] + "."
     elif most_common_number == 0:
-        return "We are glad that you are satisfied with our services!"
+        return "We are glad that you are satisfied with our services! We hope to improve our " + keywords[0][0] + " in the future."
     
 @app.route('/', methods=['POST', 'GET'])
 def ask():
