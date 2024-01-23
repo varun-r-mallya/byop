@@ -35,6 +35,7 @@ app.post('/reviews', async (req, res) => {
     review_new.save()
         .then(async () => {
             const reply = await Review.find();
+            axios.get("http://localhost:3001/auto")
             res.json({
                 message: 'Review saved successfully'
             });
