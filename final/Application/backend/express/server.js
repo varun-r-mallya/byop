@@ -21,6 +21,7 @@ app.post('/toggle', (req, res) => {
 });
 
 app.get("/panelwords", (req, res) => {
+    if(State === false){
     const url = 'http://localhost:4753/api/reviewscollection';
 
         axios.get(url)
@@ -55,17 +56,21 @@ app.get("/panelwords", (req, res) => {
                 Promise.all(promises)
                     .then(() => {
                         console.log(sentiment);
-                        res.send(sentiment);
+                        res.json({message: sentiment});
                     })
                     .catch(error => {
                         console.error(error);
-                        res.status(500).send('Error occurred while fetching reviews');
+                        res.status(500).json({message: 'Error occurred while fetching reviews'});
                     });
             })
             .catch(error => {
                 console.error(error);
-                res.status(500).send('Error occurred while fetching reviews');
+                res.status(500).json({message: 'Error occurred while fetching reviews'});
             });
+    }
+    else{
+        res.status(400).json({ message: `automode_on` });
+    }
 })
 
 app.get("/panelsenti", (req, res) => {
@@ -97,16 +102,16 @@ app.get("/panelsenti", (req, res) => {
             Promise.all(promises)
                 .then(() => {
                     console.log(sentiment);
-                    res.send(sentiment);
+                    res.json({"sentiment": sentiment});
                 })
                 .catch(error => {
                     console.error(error);
-                    res.status(500).send('Error occurred while fetching reviews');
+                    res.status(500).json({message: 'Error occurred while fetching reviews'});
                 });
         })
         .catch(error => {
             console.error(error);
-            res.status(500).send('Error occurred while fetching reviews');
+            res.status(500).json({message: 'Error occurred while fetching reviews'});
         });
 })
 
@@ -148,18 +153,18 @@ app.get("/auto", (req, res) => {
                         }
                         catch(error){
                             console.error(error);
-                            res.status(500).send('Error occurred while posting reviews');
+                            res.status(500).json({message: 'Error occurred while posting reviews'});
                         }
-                        res.send(response.data);
+                        res.json({message: response.data});
                     })
                     .catch(error => {
                         console.error(error);
-                        res.status(500).send('Error occurred while fetching reviews');
+                        res.status(500).json({message: 'Error occurred while fetching reviews'});
                     });
             })
             .catch(error => {
                 console.error(error);
-                res.status(500).send('Error occurred while fetching reviews');
+                res.status(500).json({message: 'Error occurred while fetching reviews'});
             });
     } else {
         res.status(400).json({ message: `automode_off` });
@@ -171,11 +176,72 @@ app.get('/getreviews', (req, res) => {
     axios.get(url)
         .then(response => {
             console.log(response.data);
-            res.send(response.data);
+            res.json({message: response.data});
         })
         .catch(error => {
             console.error(error);
-            res.status(500).send('Error occurred while fetching reviews');
+            res.status(500).json({message: 'Error occurred while fetching reviews'});
+        });
+});
+
+app.get('/panelanalytics', (req, res) => {
+    const url = 'http://localhost:4753/api/reviewscollection';
+
+    function mean(arr) {
+        return arr.reduce((a, b) => a + b, 0) / arr.length;
+    }
+    function median(arr) {
+        const mid = Math.floor(arr.length / 2),
+            nums = [...arr].sort((a, b) => a - b);
+        return arr.length % 2 !== 0 ? nums[mid] : (nums[mid - 1] + nums[mid]) / 2;
+    }
+    function mode(arr) {
+        return arr.sort((a, b) =>
+            arr.filter(v => v === a).length
+            - arr.filter(v => v === b).length
+        ).pop();
+    }
+    
+    axios.get(url)
+        .then(response => {
+            console.log(response.data);
+            const rating = [];
+            const reviewLength = [];
+            const promises = response.data.map((item) => {
+                return new Promise((resolve, reject) => {
+                    rating.push(item.rating);
+                    reviewLength.push(item.review.length);
+                    resolve();
+                });
+            });
+
+            Promise.all(promises)
+                .then(() => {
+                    const mean_rating = mean(rating);
+                    const median_rating = median(rating);
+                    const mode_rating = mode(rating);
+                    const mean_reviewLength = mean(reviewLength);
+                    const median_reviewLength = median(reviewLength);
+                    const mode_reviewLength = mode(reviewLength);
+                    const body = {
+                        "mean": mean_rating,
+                        "median": median_rating,
+                        "mode": mode_rating,
+                        "meanRL": mean_reviewLength,
+                        "medianRL": median_reviewLength,
+                        "modeRL": mode_reviewLength,
+                    }
+                    console.log(body);
+                    res.json({message: body});
+                })
+                .catch(error => {
+                    console.error(error);
+                    res.status(500).json({message: 'Error occurred while fetching reviews'});
+                });
+        })
+        .catch(error => {
+            console.error(error);
+            res.status(500).json({message: 'Error occurred while fetching reviews'});
         });
 });
 
@@ -187,11 +253,11 @@ app.post('/postreplies', (req, res) => {
     }
     axios.post(url, body)
         .then(response => {
-            res.status(200).send(response.data);
+            res.status(200).json({message: response.data});
         })
         .catch(error => {
             console.error(error);
-            res.status(500).send('Error occurred while posting reviews');
+            res.status(500).json({message: 'Error occurred while posting reviews'});
         });
 });
 
