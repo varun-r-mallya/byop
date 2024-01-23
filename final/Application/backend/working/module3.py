@@ -1,10 +1,8 @@
 from collections import Counter
 import pickle
-from flask import Flask, jsonify
-import requests
-# import yake
 import spacy
 from spacy.matcher import Matcher
+import sys
 
 nlp = spacy.load("en_core_web_sm")
 
@@ -18,22 +16,23 @@ def fill_template(template, doc):
         span = doc[start:end]
         if match_id == nlp.vocab.strings["NOUNS"]:
             template = template.replace("{Topic Keyword}", span.text)
+        else:
+            template = template.replace("{Topic Keyword}", "services")
     return template
 
-app = Flask(__name__)
 Listofreviews = []
 
-with open('./final/Application/backend/working/svm1.pkl', 'rb') as file:
+with open('./models/svm1.pkl', 'rb') as file:
     svm1 = pickle.load(file)
-with open('./final/Application/backend/working/svm2.pkl', 'rb') as file:
+with open('./models/svm2.pkl', 'rb') as file:
     svm2 = pickle.load(file)
-with open('./final/Application/backend/working/svm3.pkl', 'rb') as file:
+with open('./models/svm3.pkl', 'rb') as file:
     svm3 = pickle.load(file)
-with open('./final/Application/backend/working/vectorizer1.pkl', 'rb') as file:
+with open('./models/vectorizer1.pkl', 'rb') as file:
     vectorizer1 = pickle.load(file)
-with open('./final/Application/backend/working/vectorizer2.pkl', 'rb') as file:
+with open('./models/vectorizer2.pkl', 'rb') as file:
     vectorizer2 = pickle.load(file)
-with open('./final/Application/backend/working/vectorizer3.pkl', 'rb') as file:
+with open('./models/vectorizer3.pkl', 'rb') as file:
     vectorizer3 = pickle.load(file)
 
 def analyse(sentence):
@@ -59,27 +58,8 @@ def analyse(sentence):
         filled_template = fill_template("We are glad that you are satisfied with our services! We hope to improve our {Topic Keyword} in the future.", doc)
         return filled_template
     
-@app.route('/', methods=['POST', 'GET'])
-def ask():
-    url = 'http://localhost:4753/api/reviewscollection'
-    headers = {'token': "e2a56as86afa89d98a1987f86768b"}
-    response = requests.get(url, headers=headers)
-    data = response.json()
-    for item in data:
-        _id = item['_id']
-        review = item['review']
-        rating = item['rating']
-        reply = item.get('reply')
-        print(f"_id: {_id}, review: {review}, rating: {rating}, reply: {reply}")
-        new_reply = analyse(review)
-        print(new_reply)
-        send = {"_id": _id, "reply": new_reply}
-        if send not in Listofreviews:
-            Listofreviews.append(send)   
-
-    url2 = 'http://localhost:4753/api/reviewsdeposition'
-    response2 = requests.post(url2, json=Listofreviews, headers=headers)
-    return response2.text
-
-if __name__ == '__main__':
-    app.run()
+    
+input_sentence = sys.argv[1]
+output = analyse(input_sentence)
+print(output)
+    
