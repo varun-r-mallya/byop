@@ -3,8 +3,6 @@ import pickle
 from flask import Flask, jsonify
 import requests
 # import yake
-# import numpy as np
-# import pandas as pd
 import spacy
 from spacy.matcher import Matcher
 
