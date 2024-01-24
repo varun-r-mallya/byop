@@ -55,7 +55,7 @@ def analyse(sentence):
         filled_template = fill_template("We are sorry that you are unhappy with our services. Kindly tell us how we can improve our {Topic Keyword}.", doc)
         return filled_template
     elif most_common_number == 0:
-        filled_template = fill_template("We are glad that you are satisfied with our services! We hope to improve our {Topic Keyword} in the future.", doc)
+        filled_template = fill_template("We thank you for your review! We hope to improve our {Topic Keyword} in the future.", doc)
         return filled_template
     
     

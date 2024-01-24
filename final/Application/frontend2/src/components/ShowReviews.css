@@ -1,0 +1,9 @@
+.review_item{
+    color: white;
+    border-radius: 7px;
+    margin: 3px;
+    transition: background-color 0.3s ease;
+    :hover {
+        background-color: "#3c5377";
+    }
+}
