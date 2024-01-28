@@ -2,6 +2,7 @@ import './App.css'
 import ShowReviews from './components/ShowReviews'
 import { useState } from 'react';
 import SentimentChart from './components/SentimentChart'
+import Gauge from './components/Auto';
 
 function App() {
   return (
@@ -28,7 +29,9 @@ function App() {
       <div style={{display: 'flex', flexDirection: 'row'}}>
       <ShowReviews  />
       <SentimentChart />
+      
       </div>
+      <Gauge />
     </div>
   )
 }
